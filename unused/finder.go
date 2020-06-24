@@ -191,9 +191,6 @@ func (ucf *CodeFinder) Run(fileArgs []string) ([]Object, error) {
 		return nil, fmt.Errorf(
 			"no files supplied as arguments; must supply at least one file or directory")
 	}
-	if os.Getenv("GOPATH") == "" {
-		return nil, fmt.Errorf("GOPATH not set")
-	}
 
 	// first, get all the file names and package imports
 	ucf.Logf("Collecting declarations from source files")
