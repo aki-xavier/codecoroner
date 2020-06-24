@@ -4,7 +4,8 @@ package pkg2
 
 import (
 	"fmt"
-	"github.com/3rf/codecoroner/unused/testdata/pkg1"
+
+	"github.com/aki-xavier/codecoroner/unused/testdata/pkg1"
 )
 
 // this type and its method should be found by [idents]

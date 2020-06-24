@@ -3,17 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/3rf/codecoroner/unused"
 	"go/build"
-	"golang.org/x/tools/go/buildutil"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/aki-xavier/codecoroner/unused"
+	"golang.org/x/tools/go/buildutil"
 )
 
 func main() {
 	var ignoreList string
-	ucf := unused.NewUnusedCodeFinder()
+	ucf := unused.NewCodeFinder()
 	flag.BoolVar(&(ucf.Verbose), "v", false,
 		"prints extra information during execution to stderr")
 	flag.BoolVar(&(ucf.IncludeTests), "tests", false, "include tests in the analysis")

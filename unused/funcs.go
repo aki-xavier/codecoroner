@@ -11,7 +11,7 @@ import (
 )
 
 // main method for running callgraph-based unused code analysis
-func (ucf *UnusedCodeFinder) findUnusedFuncs() ([]UnusedObject, error) {
+func (ucf *CodeFinder) findUnusedFuncs() ([]Object, error) {
 	// get the callgraph if we are doing this the hard way
 	ucf.Logf("Running callgraph analysis on following packages: \n\t%v",
 		strings.Join(ucf.pkgsAsArray(), "\n\t"))
@@ -26,7 +26,7 @@ func (ucf *UnusedCodeFinder) findUnusedFuncs() ([]UnusedObject, error) {
 	return unusedFuncs, nil
 }
 
-func (ucf *UnusedCodeFinder) getCallgraph() error {
+func (ucf *CodeFinder) getCallgraph() error {
 	var conf loader.Config
 	_, err := conf.FromArgs(ucf.pkgsAsArray(), ucf.IncludeTests)
 	if err != nil {
@@ -51,14 +51,14 @@ func (ucf *UnusedCodeFinder) getCallgraph() error {
 	res := rta.Analyze(roots, true)
 
 	// build a simplified callgraph map for name->filenames
-	for node, _ := range res.Reachable {
+	for node := range res.Reachable {
 		position := ssaP.Fset.Position(node.Pos())
 		ucf.filesByCaller[node.Name()] = append(ucf.filesByCaller[node.Name()], position)
 	}
 	return nil
 }
 
-func (ucf *UnusedCodeFinder) isInCG(f UnusedObject) bool {
+func (ucf *CodeFinder) isInCG(f Object) bool {
 	for _, pos := range ucf.filesByCaller[f.Name] {
 		if strings.Contains(pos.Filename, f.Position.Filename) {
 			return true
@@ -67,8 +67,8 @@ func (ucf *UnusedCodeFinder) isInCG(f UnusedObject) bool {
 	return false
 }
 
-func (ucf *UnusedCodeFinder) computeUnusedFuncs() []UnusedObject {
-	unused := []UnusedObject{}
+func (ucf *CodeFinder) computeUnusedFuncs() []Object {
+	unused := []Object{}
 	for _, f := range ucf.funcs {
 		if !ucf.isInCG(f) {
 			unused = append(unused, f)
@@ -79,7 +79,7 @@ func (ucf *UnusedCodeFinder) computeUnusedFuncs() []UnusedObject {
 
 // grab the callgraph roots from the passed in files. This is based on adonovan's
 // code from https://github.com/golang/tools/blob/master/cmd/callgraph/main.go
-func (ucf *UnusedCodeFinder) getRoots(prog *ssa.Program) ([]*ssa.Function, error) {
+func (ucf *CodeFinder) getRoots(prog *ssa.Program) ([]*ssa.Function, error) {
 	pkgs := prog.AllPackages()
 	mains := []*ssa.Package{}
 

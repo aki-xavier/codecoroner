@@ -1,4 +1,4 @@
-// The "unused" package wraps the go's static anaylsis packages and provides
+// Package unused wraps the go's static anaylsis packages and provides
 // hooks for finding unused functions and identifiers in a codebase
 package unused
 
@@ -13,36 +13,37 @@ import (
 	"strings"
 )
 
-type UnusedCodeFinder struct {
+// CodeFinder :
+type CodeFinder struct {
 	// universal config options
 	Idents    bool
 	Ignore    []string
 	Verbose   bool
 	LogWriter io.Writer
 
-	IncludeTests         bool
+	IncludeTests bool
 
 	filesByCaller map[string][]token.Position
 	pkgs          map[string]struct{}
-	funcs         []UnusedObject
+	funcs         []Object
 	numFilesRead  int
 }
 
-func NewUnusedCodeFinder() *UnusedCodeFinder {
-	return &UnusedCodeFinder{
+// NewCodeFinder :
+func NewCodeFinder() *CodeFinder {
+	return &CodeFinder{
 		// init private storage
 		pkgs:          map[string]struct{}{},
 		filesByCaller: map[string][]token.Position{},
-		funcs:         []UnusedObject{},
+		funcs:         []Object{},
 		// default to stderr; this can be overwritten before Run() is called
 		LogWriter: os.Stderr,
 	}
 }
 
-// TODO: move this log stuff to the bottom
 // Logf is a one-off function for writing any verbose log output to
 // stderr. There might be a more idiomatic way to do this in go...
-func (ucf *UnusedCodeFinder) Logf(format string, v ...interface{}) {
+func (ucf *CodeFinder) Logf(format string, v ...interface{}) {
 	if ucf.Verbose {
 		//ignore any errors in Fprintf for now
 		fmt.Fprintf(ucf.LogWriter, format+"\n", v...)
@@ -51,26 +52,26 @@ func (ucf *UnusedCodeFinder) Logf(format string, v ...interface{}) {
 
 // Errorf is a one-off function for writing any error output to
 // stderr. There might be a more idiomatic way to do this in go...
-func (ucf *UnusedCodeFinder) Errorf(format string, v ...interface{}) {
+func (ucf *CodeFinder) Errorf(format string, v ...interface{}) {
 	fmt.Fprintf(ucf.LogWriter, format+"\n", v...)
 }
 
 // AddPkg sets the package name as an entry in the package map,
 // here the map holds no values and functions as a hash set
-func (ucf *UnusedCodeFinder) AddPkg(pkgName string) {
+func (ucf *CodeFinder) AddPkg(pkgName string) {
 	ucf.pkgs[pkgName] = struct{}{}
 	ucf.Logf("Found pkg %v", pkgName)
 }
 
-func (ucf *UnusedCodeFinder) pkgsAsArray() []string {
+func (ucf *CodeFinder) pkgsAsArray() []string {
 	packages := make([]string, 0, len(ucf.pkgs))
-	for pkg, _ := range ucf.pkgs {
+	for pkg := range ucf.pkgs {
 		packages = append(packages, pkg)
 	}
 	return packages
 }
 
-func (ucf *UnusedCodeFinder) readFuncsAndImportsFromFile(filename string) error {
+func (ucf *CodeFinder) readFuncsAndImportsFromFile(filename string) error {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, filename, nil, 0)
 	if err != nil {
@@ -102,7 +103,7 @@ func (ucf *UnusedCodeFinder) readFuncsAndImportsFromFile(filename string) error 
 			case s == "init":
 			case s == "test":
 			default:
-				ucf.funcs = append(ucf.funcs, UnusedObject{s, fset.Position(n.Pos())})
+				ucf.funcs = append(ucf.funcs, Object{s, fset.Position(n.Pos())})
 			}
 		}
 		return true
@@ -148,7 +149,7 @@ func trimGopath(filename string) string {
 	return filename
 }
 
-func (ucf *UnusedCodeFinder) canReadSourceFile(filename string) bool {
+func (ucf *CodeFinder) canReadSourceFile(filename string) bool {
 	if ucf.shouldIgnorePath(filename) {
 		ucf.Logf("Ignoring path '%v'", filename)
 		return false
@@ -159,7 +160,7 @@ func (ucf *UnusedCodeFinder) canReadSourceFile(filename string) bool {
 	return true
 }
 
-func (ucf *UnusedCodeFinder) shouldIgnorePath(path string) bool {
+func (ucf *CodeFinder) shouldIgnorePath(path string) bool {
 	for _, ignoreToken := range ucf.Ignore {
 		if strings.Contains(path, ignoreToken) {
 			return true
@@ -172,7 +173,7 @@ func (ucf *UnusedCodeFinder) shouldIgnorePath(path string) bool {
 	return false
 }
 
-func (ucf *UnusedCodeFinder) readDir(dirname string) error {
+func (ucf *CodeFinder) readDir(dirname string) error {
 	err := filepath.Walk(dirname, func(path string, info os.FileInfo, err error) error {
 		if err == nil && !info.IsDir() && ucf.canReadSourceFile(path) {
 			err = ucf.readFuncsAndImportsFromFile(path)
@@ -182,7 +183,8 @@ func (ucf *UnusedCodeFinder) readDir(dirname string) error {
 	return err
 }
 
-func (ucf *UnusedCodeFinder) Run(fileArgs []string) ([]UnusedObject, error) {
+// Run :
+func (ucf *CodeFinder) Run(fileArgs []string) ([]Object, error) {
 
 	// do some basic sanity checks on system configuration
 	if len(fileArgs) == 0 {

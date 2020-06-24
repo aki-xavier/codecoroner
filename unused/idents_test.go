@@ -1,13 +1,14 @@
 package unused
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestUnusedIdentsWithMain(t *testing.T) {
 	Convey("with a test main package and a default UnusedCodeFinder", t, func() {
-		ucf := NewUnusedCodeFinder()
+		ucf := NewCodeFinder()
 		So(ucf, ShouldNotBeNil)
 		ucf.Idents = true
 
@@ -41,7 +42,7 @@ func TestUnusedIdentsWithMain(t *testing.T) {
 
 func TestUnusedIdentsWithTests(t *testing.T) {
 	Convey("with a test main package and a default UnusedCodeFinder", t, func() {
-		ucf := NewUnusedCodeFinder()
+		ucf := NewCodeFinder()
 		So(ucf, ShouldNotBeNil)
 		ucf.Idents = true
 		ucf.IncludeTests = true
@@ -77,7 +78,7 @@ func TestUnusedIdentsWithTests(t *testing.T) {
 
 func TestUnusedIdentsWithIgnore(t *testing.T) {
 	Convey("with a test main package and a default UnusedCodeFinder", t, func() {
-		ucf := NewUnusedCodeFinder()
+		ucf := NewCodeFinder()
 		So(ucf, ShouldNotBeNil)
 		ucf.Idents = true
 		ucf.Ignore = []string{"pkg1", "pkg2"}

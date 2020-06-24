@@ -5,21 +5,21 @@ import (
 	"go/token"
 )
 
-// UnusedThing represents a found unused function or identifier
-type UnusedObject struct {
+// Object represents a found unused function or identifier
+type Object struct {
 	Name     string
 	Position token.Position
 }
 
 // String prints the position and name of the unused object.
-func (ut UnusedObject) String() string {
+func (ut Object) String() string {
 	return fmt.Sprintf("%v:%v:%v: %v",
 		trimGopath(ut.Position.Filename), ut.Position.Line, ut.Position.Column, ut.Name)
 }
 
 // ByPosition sorts unused objects by file/location.
 // This type is a close copy of a similar sorter from the golint tool.
-type ByPosition []UnusedObject
+type ByPosition []Object
 
 // Len method for sorting
 func (p ByPosition) Len() int { return len(p) }

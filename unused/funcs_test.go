@@ -2,16 +2,17 @@ package unused
 
 import (
 	"fmt"
-	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"strings"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func init() {
 	// quick check to make sure we are in the right directory
 	if _, err := os.Stat("testdata/mockmain.go"); err != nil {
-		panic("unused tests must be run from the 'github.com/3rf/codecoroner/unused' dir")
+		panic("unused tests must be run from the 'github.com/aki-xavier/codecoroner/unused' dir")
 	}
 }
 
@@ -19,7 +20,7 @@ func init() {
 func ShouldBeFoundIn(actual interface{}, expected ...interface{}) string {
 	// this can panic, but I'm not adding type checking
 	target := actual.(string)
-	results := expected[0].([]UnusedObject)
+	results := expected[0].([]Object)
 	for _, thing := range results {
 		if strings.HasSuffix(thing.Name, target) {
 			return ""
@@ -31,7 +32,7 @@ func ShouldBeFoundIn(actual interface{}, expected ...interface{}) string {
 func ShouldNotBeFoundIn(actual interface{}, expected ...interface{}) string {
 	// this can panic, but I'm not adding type checking
 	target := actual.(string)
-	results := expected[0].([]UnusedObject)
+	results := expected[0].([]Object)
 	for _, thing := range results {
 		if strings.HasSuffix(thing.Name, target) {
 			return fmt.Sprintf("found '%v' in results (it shouldn't be there)", target)
@@ -42,7 +43,7 @@ func ShouldNotBeFoundIn(actual interface{}, expected ...interface{}) string {
 
 func TestUnusedFuncsWithMain(t *testing.T) {
 	Convey("with a test main package and a default UnusedCodeFinder", t, func() {
-		ucf := NewUnusedCodeFinder()
+		ucf := NewCodeFinder()
 		So(ucf, ShouldNotBeNil)
 
 		Convey("running 'funcs'", func() {
@@ -66,7 +67,7 @@ func TestUnusedFuncsWithMain(t *testing.T) {
 
 func TestUnusedFuncsWithTests(t *testing.T) {
 	Convey("with a test main package and a UnusedCodeFinder with -tests", t, func() {
-		ucf := NewUnusedCodeFinder()
+		ucf := NewCodeFinder()
 		So(ucf, ShouldNotBeNil)
 		ucf.IncludeTests = true
 

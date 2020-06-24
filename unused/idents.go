@@ -29,7 +29,7 @@ type ident struct {
 	Pos  token.Pos
 }
 
-func (ucf *UnusedCodeFinder) findUnusedIdents() ([]UnusedObject, error) {
+func (ucf *CodeFinder) findUnusedIdents() ([]Object, error) {
 	var conf loader.Config
 	_, err := conf.FromArgs(ucf.pkgsAsArray(), ucf.IncludeTests)
 	if err != nil {
@@ -86,11 +86,11 @@ func (ucf *UnusedCodeFinder) findUnusedIdents() ([]UnusedObject, error) {
 			}
 		}
 	}
-	unused := []UnusedObject{}
+	unused := []Object{}
 	// see which declared idents are not actually used
-	for key, _ := range defined {
+	for key := range defined {
 		if _, exists := identToUsage[key]; !exists {
-			unused = append(unused, UnusedObject{
+			unused = append(unused, Object{
 				Name:     key.Name,
 				Position: p.Fset.Position(key.Pos),
 			})
